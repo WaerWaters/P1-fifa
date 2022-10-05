@@ -1,10 +1,10 @@
 import pandas as pd
 
-#Reads the data set and replace special characters that the encoding is unable to decode with the word "aaa"
+#Læser datasættet og erstatter specielle tegn som den ikke var istand til at indkode med orden "aaa"
 df = pd.read_csv('data.csv', encoding='UTF-8')
 df=df.replace('\ufffd','aaa',regex=True)
 
-#Finding the names with the special characters and displaying them
+#Finder navne med specielle karakterer og fremviser dem
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     count = 0
     names = []
@@ -15,6 +15,10 @@ with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     print(count)
     print(names)
 
-
-
-
+#Tjekker hvorvidt alle værdiger under "value" er den samme valuta
+with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    count = 0
+    for x in df.Value:
+        if "€" in x:
+            count += 1   
+    print(count)
