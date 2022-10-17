@@ -5,8 +5,6 @@ df = pd.read_csv('data.csv', encoding='UTF-8')
 df = df.replace('\ufffd', 'aaa', regex=True)
 
 # Finder navne med specielle karakterer og fremviser dem
-
-
 def names_with_special_characters():
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         count = 0
@@ -19,28 +17,25 @@ def names_with_special_characters():
         print(names)
 
 
-# Tjekker hvorvidt alle værdiger under "Value" er den samme valuta
+#Tjekker hvorvidt alle værdiger under "Value" er den samme valuta
 def check_valuta():
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         count = 0
         for x in df.Value:
             if "€" in x:
+
                 count += 1
         print(count)
 
-# Tjekker data typerne på hver colonne
 
-
+#Tjekker data typerne på hver colonne
 def check_datatypes():
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df.dtypes)
 
-
 check_datatypes()
 
-# Kan tjekke hvor mange spillere hver position har
-
-
+#Kan tjekke hvor mange spillere hver position har
 def check_quantity_position():
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         positions = ["RES", "SUB", "GK", "NaN"]

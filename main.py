@@ -4,6 +4,7 @@ import json
 import math
 import csv
 
+
 # Læser datasættet og erstatter specielle tegn som den ikke var istand til at indkode med orden "aaa"
 df = pd.read_csv('data.csv', encoding='UTF-8')
 df = df.replace('\ufffd', 'WZQ ', regex=True)
@@ -46,12 +47,6 @@ df = df.replace('\u00D6','WZQ', regex=True)
 df = df.replace('\u00E4','WZQ', regex=True)
 df = df.replace('\u00DF','WZQ', regex=True)
 df = df.replace('\u00C1','WZQ', regex=True)
-
-
-
-
-
-
 
 def convert(money):
     df[money] = df[money].str.replace("€", "")
