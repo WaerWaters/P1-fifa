@@ -75,16 +75,16 @@ drop_list = ["Name", "Special", "PreferredFoot", "InternationalReputation", "Wea
              "ContractValidUntil", "Height", "Weight", "Age", "Photo", "Nationality", "Flag", "Overall", "Potential", "Club", "ClubLogo", "BestPosition", "BestOverallRating", "ReleaseClause"]
 attributes = df.drop(columns=drop_list)
 positions = {
-    "GK": [167495, 235073, 190941],
-    "RB": [226851, 202371, 253149],
-    "LB": [234396, 209889, 239368],
-    "CB": [212190, 229237, 247263, 220814, 178603, 213331],
-    "CDM": [209658, 218339, 212242, 212622, 252371, 211748],
-    "COM": [189596, 188350, 213955],
-    "HM": [206113, 212194, 202857],
-    "LM": [213345, 203486, 241852],
-    "ST": [188545, 239085, 234236],
-}
+        "GK": [167495, 235073, 190941],
+        "RB": [226851, 202371, 253149],
+        "LB": [234396, 209889, 239368],
+        "CB": [212190, 229237, 247263, 220814, 178603, 213331],
+        "CDM": [209658, 218339, 212242, 212622, 252371, 211748],
+        "COM": [189596, 188350, 213955],
+        "HM": [206113, 212194, 202857],
+        "LM": [213345, 203486, 241852],
+        "ST": [188545, 239085, 234236],
+    }
 
 
 def ideal_attributes():
@@ -111,7 +111,7 @@ def ideal_attributes():
             else:
                 attribute_average = round(
                     total_attribute_value/(len(players) - players_NaN), 1)
-                ideal_player_attributes[attribute] = attribute_average
+            ideal_player_attributes[attribute] = attribute_average
         ideal_player_stats[position] = ideal_player_attributes.copy()
         ideal_player_attributes.clear()
     ideal_player_stats_json = json.dumps(ideal_player_stats, indent=2)
@@ -176,12 +176,12 @@ def splitting_key():
     ideal_team_cost_procent_json = json.dumps(
         ideal_team_cost_procent, indent=2)
     # print(ideal_team_cost_procent_json)
-
+    
     return ideal_team_cost_procent
 
 
 not_elible_teams = ["","","","","","","","","","","","","","","",]  # de hold som er i samme liga som holdet.
-
+    
 elible_players = []
 
 # Nikolai Kaaberbøl
@@ -247,23 +247,23 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
                         player_has_Nan = 1
                         continue
                     else:
-                        attribute_count += 1
+                    attribute_count += 1
                         player_attribute_value = float(
                             df.loc[df["ID"] == player, attribute])
                         ideal_attributes_value = ideal_stats.get(attribute)
                         print(player_attribute_value)
                         weighted_difference = abs(
                             player_attribute_value - ideal_attributes_value) * 1  # WEIGHTED NUMBER
-                        sum_difference += weighted_difference
+                    sum_difference += weighted_difference
             if player_has_Nan != 1:
-                sum_difference_average = sum_difference / attribute_count
+            sum_difference_average = sum_difference / attribute_count
                 # print(sum_difference, attribute_count, sum_difference_average)
-                if new_player.get(position) == None:
-                    new_player[position] = [player, sum_difference_average]
-                else:
+            if new_player.get(position) == None:
+                new_player[position] = [player, sum_difference_average]
+            else:
                     player_stat_values = new_player[position][1]
                     if sum_difference_average < player_stat_values:
-                        new_player[position] = [player, sum_difference_average]
+                    new_player[position] = [player, sum_difference_average]
         team[position] = new_player[position].copy()
     team_json = json.dumps(team, indent=2)
     # print(team_json)
@@ -296,7 +296,7 @@ formation = {
         },
     },
     "4-2-1": {
-        "GK": {
+       "GK": {
             "name": "John",
             "age": 48,
             "atk": 83,
@@ -307,6 +307,6 @@ formation = {
             "age": 31,
             "atk": 72,
             "def": 54,
-        },
+        }, 
     }
 }
