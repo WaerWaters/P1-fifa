@@ -109,14 +109,27 @@ def ideal_attributes():
             if len(players) == players_NaN:
                 ideal_player_attributes[attribute] = float("nan")
             else:
-                attribute_average = round(
-                    total_attribute_value/(len(players) - players_NaN), 1)
+                attribute_average = round(total_attribute_value/(len(players) - players_NaN), 1)
             ideal_player_attributes[attribute] = attribute_average
         ideal_player_stats[position] = ideal_player_attributes.copy()
         ideal_player_attributes.clear()
     ideal_player_stats_json = json.dumps(ideal_player_stats, indent=2)
-    # print(ideal_player_stats_json)
+    #print(ideal_player_stats_json)
     return ideal_player_stats
+
+
+def top8(ideal_attributes):
+    ideal_attributes = ideal_attributes
+    result = {}
+    for position in ideal_attributes:
+        attributes = ideal_attributes.get(position)
+        top = sorted(attributes, key=attributes.get, reverse=True)[2:10]
+        result[position] = top
+    result_json = json.dumps(result)
+    print(result_json)
+    return result
+
+#top8(ideal_attributes())
 
 
 def splitting_key():
@@ -221,7 +234,7 @@ def player_list_elible():
         writer.writerow(a)
 
 
-player_list_elible()
+
 
 
 def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
@@ -247,7 +260,7 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
                         player_has_Nan = 1
                         continue
                     else:
-                    attribute_count += 1
+                        attribute_count += 1
                         player_attribute_value = float(
                             df.loc[df["ID"] == player, attribute])
                         ideal_attributes_value = ideal_stats.get(attribute)
@@ -256,57 +269,19 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
                             player_attribute_value - ideal_attributes_value) * 1  # WEIGHTED NUMBER
                     sum_difference += weighted_difference
             if player_has_Nan != 1:
-            sum_difference_average = sum_difference / attribute_count
+                sum_difference_average = sum_difference / attribute_count
                 # print(sum_difference, attribute_count, sum_difference_average)
             if new_player.get(position) == None:
                 new_player[position] = [player, sum_difference_average]
             else:
                     player_stat_values = new_player[position][1]
                     if sum_difference_average < player_stat_values:
-                    new_player[position] = [player, sum_difference_average]
+                        new_player[position] = [player, sum_difference_average]
         team[position] = new_player[position].copy()
     team_json = json.dumps(team, indent=2)
     # print(team_json)
     return team
 
 
-# drop list
-# integrate splitting_key to find_best_team
-# check if ideal_attributes works with the dataframe after droplist
-# check if find_best_team works with the dataframe after droplist
-# check the dict format that ideal_attributes return in || splitting_key integration might work
-
-
 # find_best_team(splitting_key(), df["ID"], ideal_attributes())
 
-
-formation = {
-    "4-2-3": {
-        "CM": {
-            "name": "Benny",
-            "age": 28,
-            "atk": 80,
-            "def": 23,
-        },
-        "CAM": {
-            "name": "Bob",
-            "age": 32,
-            "atk": 70,
-            "def": 56,
-        },
-    },
-    "4-2-1": {
-       "GK": {
-            "name": "John",
-            "age": 48,
-            "atk": 83,
-            "def": 43,
-        },
-        "ST": {
-            "name": "James",
-            "age": 31,
-            "atk": 72,
-            "def": 54,
-        }, 
-    }
-}
