@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import math
 import csv
+import pprint
 
 
 # Læser datasættet og erstatter specielle tegn som den ikke var istand til at indkode med orden "aaa"
@@ -75,16 +76,16 @@ drop_list = ["Name", "Special", "PreferredFoot", "InternationalReputation", "Wea
              "ContractValidUntil", "Height", "Weight", "Age", "Photo", "Nationality", "Flag", "Overall", "Potential", "Club", "ClubLogo", "BestPosition", "BestOverallRating", "ReleaseClause"]
 attributes = df.drop(columns=drop_list)
 positions = {
-    "GK": [167495, 235073, 190941],
-    "RB": [226851, 202371, 253149],
-    "LB": [234396, 209889, 239368],
-    "CB": [212190, 229237, 247263, 220814, 178603, 213331],
-    "CDM": [209658, 218339, 212242, 212622, 252371, 211748],
-    "COM": [189596, 188350, 213955],
-    "HM": [206113, 212194, 202857],
-    "LM": [213345, 203486, 241852],
-    "ST": [188545, 239085, 234236],
-}
+        "GK": [167495, 235073, 190941],
+        "RB": [226851, 202371, 253149],
+        "LB": [234396, 209889, 239368],
+        "CB": [212190, 229237, 247263, 220814, 178603, 213331],
+        "CDM": [209658, 218339, 212242, 212622, 252371, 211748],
+        "COM": [189596, 188350, 213955],
+        "HM": [206113, 212194, 202857],
+        "LM": [213345, 203486, 241852],
+        "ST": [188545, 239085, 234236],
+    }
 
 
 def ideal_attributes():
@@ -109,19 +110,32 @@ def ideal_attributes():
             if len(players) == players_NaN:
                 ideal_player_attributes[attribute] = float("nan")
             else:
-                attribute_average = round(
-                    total_attribute_value/(len(players) - players_NaN), 1)
-                ideal_player_attributes[attribute] = attribute_average
+                attribute_average = round(total_attribute_value/(len(players) - players_NaN), 1)
+            ideal_player_attributes[attribute] = attribute_average
         ideal_player_stats[position] = ideal_player_attributes.copy()
         ideal_player_attributes.clear()
     ideal_player_stats_json = json.dumps(ideal_player_stats, indent=2)
-    # print(ideal_player_stats_json)
+    #print(ideal_player_stats_json)
     return ideal_player_stats
 
 
-def splitting_key():
-    team_list = ["FC Bayern M�nchen", "Dortmund", "Leverkusen"]
+def top8(ideal_attributes):
+    ideal_attributes = ideal_attributes
+    result = {}
+    for position in ideal_attributes:
+        attributes = ideal_attributes.get(position)
+        top = sorted(attributes, key=attributes.get, reverse=True)[2:10]
+        result[position] = top
+    result_json = json.dumps(result)
+    # print(result_json)
+    return result
 
+# pprint.pprint(top8(ideal_attributes()))
+
+
+def splitting_key():
+    team_list = ["FC Bayern MWZQnchen", "Borussia Dortmund", "Leverkusen"]
+    position_list = ["GK","RB","LB","CB","CDM","COM", "HM","LM","ST"]
     # calculate cost of each positions on each team (float)
     ideal_team_cost = {}
     ideal_player_cost = {}
@@ -147,8 +161,8 @@ def splitting_key():
     # print(ideal_team_cost_json)
 
     # calculate cost in procent of each position on each team (float)
-    ideal_player_cost_procent_club = {}
-    ideal_team_cost_procent_club = {}
+    ideal_player_ratio_cost_club = {}
+    ideal_team_ratio_cost_club = {}
     for club in ideal_team_cost:
         team_cost = 0
         position_costs_array = ideal_team_cost.get(club)
@@ -156,32 +170,35 @@ def splitting_key():
             team_cost += position_costs_array.get(position_cost)
         for position_cost in position_costs_array:
             current_position_cost = position_costs_array.get(position_cost)
-            position_procent_cost = current_position_cost / team_cost * 100
-            ideal_player_cost_procent_club[position_cost] = position_procent_cost
-        ideal_team_cost_procent_club[club] = ideal_player_cost_procent_club.copy(
+            position_ratio_cost = current_position_cost / team_cost
+            ideal_player_ratio_cost_club[position_cost] = position_ratio_cost
+        ideal_team_ratio_cost_club[club] = ideal_player_ratio_cost_club.copy(
         )
     ideal_team_cost_procent_club_json = json.dumps(
-        ideal_team_cost_procent_club, indent=2)
+        ideal_team_ratio_cost_club, indent=2)
     # print(ideal_team_cost_procent_club_json)
 
     # calculate average cost in procent of each position from each team (float)
-    ideal_team_cost_procent = {}
-    for position_procent_to_team in ideal_team_cost_procent_club["Bayern Munchen"]:
-        position_procent = 0
+    ideal_team_cost_ratio = {}
+    for position in position_list:
+        position_ratio = 0
         for club in team_list:
-            position_procent += ideal_team_cost_procent_club[club].get(
-                position_procent_to_team)
-        average_procent_position = position_procent / len(team_list)
-        ideal_team_cost_procent[position_procent_to_team] = average_procent_position
-    ideal_team_cost_procent_json = json.dumps(
-        ideal_team_cost_procent, indent=2)
-    # print(ideal_team_cost_procent_json)
+            # print(ideal_team_ratio_cost_club[club].get(position))
+            position_ratio += ideal_team_ratio_cost_club[club].get(position)
 
-    return ideal_team_cost_procent
+        average_ratio_position = position_ratio / len(team_list)
+        ideal_team_cost_ratio[position] = average_ratio_position
+        ideal_team_cost_ratio_json = json.dumps(
+                ideal_team_cost_ratio, indent=2)
+    # print(ideal_team_cost_ratio_json)
+    return ideal_team_cost_ratio
+    
 
 
-not_elible_teams = ["","","","","","","","","","","","","","","",]  # de hold som er i samme liga som holdet.
+# splitting_key()
 
+not_elible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","SpVgg Greuther FWZQrth"]  # de hold som er i samme liga som holdet.
+    
 elible_players = []
 
 # Nikolai Kaaberbøl
@@ -214,19 +231,17 @@ def player_list_elible():
         else:
             elible_players.append(player)
 
-    for i in elible_players:
-        a.append(df.loc[df["ID"] == i, "Club"].values[0])
-    with open("holdnavne.csv", "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(a)
+    return elible_players
 
 
-player_list_elible()
+# player_list_elible()
 
 
-def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
+
+def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top_values):
     budget = 0
     team = {}
+    used_player_list = []
     for position in ideal_stats_to_pos:
         new_player = {}
         ideal_stats = ideal_stats_to_pos.get(position)
@@ -239,7 +254,7 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
                 continue
             else:
                 attribute_count = 0
-                for attribute in attributes.columns:
+                for attribute in top_values[position]:
                     if attribute in ["ID", "Value", "Wage"]:
                         continue
                     if math.isnan(ideal_stats_to_pos[position].get(attribute)) or ideal_stats_to_pos[position].get(attribute) == "nan":
@@ -251,13 +266,13 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
                         player_attribute_value = float(
                             df.loc[df["ID"] == player, attribute])
                         ideal_attributes_value = ideal_stats.get(attribute)
-                        print(player_attribute_value)
                         weighted_difference = abs(
                             player_attribute_value - ideal_attributes_value) * 1  # WEIGHTED NUMBER
-                        sum_difference += weighted_difference
+                    sum_difference += weighted_difference
             if player_has_Nan != 1:
                 sum_difference_average = sum_difference / attribute_count
-                # print(sum_difference, attribute_count, sum_difference_average)
+                    # print(sum_difference, attribute_count, sum_difference_average)
+            if player not in used_player_list:
                 if new_player.get(position) == None:
                     new_player[position] = [player, sum_difference_average]
                 else:
@@ -265,48 +280,10 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos):
                     if sum_difference_average < player_stat_values:
                         new_player[position] = [player, sum_difference_average]
         team[position] = new_player[position].copy()
+        used_player_list.append(player)
     team_json = json.dumps(team, indent=2)
     # print(team_json)
     return team
 
 
-# drop list
-# integrate splitting_key to find_best_team
-# check if ideal_attributes works with the dataframe after droplist
-# check if find_best_team works with the dataframe after droplist
-# check the dict format that ideal_attributes return in || splitting_key integration might work
-
-
-# find_best_team(splitting_key(), df["ID"], ideal_attributes())
-
-
-formation = {
-    "4-2-3": {
-        "CM": {
-            "name": "Benny",
-            "age": 28,
-            "atk": 80,
-            "def": 23,
-        },
-        "CAM": {
-            "name": "Bob",
-            "age": 32,
-            "atk": 70,
-            "def": 56,
-        },
-    },
-    "4-2-1": {
-        "GK": {
-            "name": "John",
-            "age": 48,
-            "atk": 83,
-            "def": 43,
-        },
-        "ST": {
-            "name": "James",
-            "age": 31,
-            "atk": 72,
-            "def": 54,
-        },
-    }
-}
+pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_elible(), ideal_stats_to_pos= ideal_attributes(), top_values = top8(ideal_attributes())))
