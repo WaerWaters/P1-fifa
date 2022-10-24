@@ -198,6 +198,7 @@ def splitting_key():
 # splitting_key()
 
 not_elible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","SpVgg Greuther FWZQrth"]  # de hold som er i samme liga som holdet.
+
     
 elible_players = []
 
@@ -235,7 +236,6 @@ def player_list_elible():
 
 
 # player_list_elible()
-
 
 
 def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top_values):
@@ -286,4 +286,6 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top_value
     return team
 
 
+
 pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_elible(), ideal_stats_to_pos= ideal_attributes(), top_values = top8(ideal_attributes())))
+
