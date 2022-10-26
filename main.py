@@ -97,20 +97,18 @@ def ideal_attributes():
         for attribute in attributes:
             if attribute == "ID":
                 continue
-            players_NaN = 0
+            player_nan_count = 0
             total_attribute_value = 0
             for player in players:
                 if math.isnan(df.loc[df["ID"] == player, attribute]):
-                    players_NaN += 1
-                    # print(player, attribute, float(df.loc[df["ID"] == player, attribute]))
-
+                    player_nan_count += 1
                     continue
                 value = int(df.loc[df["ID"] == player, attribute])
                 total_attribute_value += value
-            if len(players) == players_NaN:
+            if len(players) == player_nan_count:
                 ideal_player_attributes[attribute] = float("nan")
             else:
-                attribute_average = round(total_attribute_value/(len(players) - players_NaN), 1)
+                attribute_average = round(total_attribute_value/(len(players) - player_nan_count), 1)
             ideal_player_attributes[attribute] = attribute_average
         ideal_player_stats[position] = ideal_player_attributes.copy()
         ideal_player_attributes.clear()
@@ -118,19 +116,20 @@ def ideal_attributes():
     #print(ideal_player_stats_json)
     return ideal_player_stats
 
+#ideal_attributes()
 
 def top8(ideal_attributes):
     ideal_attributes = ideal_attributes
     result = {}
     for position in ideal_attributes:
         attributes = ideal_attributes.get(position)
-        top = sorted(attributes, key=attributes.get, reverse=True)[2:10]
-        result[position] = top
+        top8 = sorted(attributes, key=attributes.get, reverse=True)[2:10]
+        result[position] = top8
     result_json = json.dumps(result)
     # print(result_json)
     return result
 
-# pprint.pprint(top8(ideal_attributes()))
+#pprint.pprint(top8(ideal_attributes()))
 
 
 def splitting_key():
@@ -145,22 +144,19 @@ def splitting_key():
             if position == "CB" or position == "CDM":
                 first = positions.get(position)[x]
                 second = positions.get(position)[x+3]
-                first = float(df.loc[df["ID"] == first, "Wage"]
-                              * 52 + df.loc[df["ID"] == first, "Value"])
-                second = float(df.loc[df["ID"] == second, "Wage"]
-                               * 52 + df.loc[df["ID"] == second, "Value"])
+                first = float(df.loc[df["ID"] == first, "Wage"] * 52 + df.loc[df["ID"] == first, "Value"])
+                second = float(df.loc[df["ID"] == second, "Wage"] * 52 + df.loc[df["ID"] == second, "Value"])
                 value = (first + second)/2
                 ideal_player_cost[position] = value
             else:
                 id = positions.get(position)[x]
-                value = float(df.loc[df["ID"] == id, "Wage"]
-                              * 52 + df.loc[df["ID"] == id, "Value"])
+                value = float(df.loc[df["ID"] == id, "Wage"] * 52 + df.loc[df["ID"] == id, "Value"])
                 ideal_player_cost[position] = value
         ideal_team_cost[team_list[x]] = ideal_player_cost.copy()
     ideal_team_cost_json = json.dumps(ideal_team_cost, indent=2)
-    # print(ideal_team_cost_json)
+    #print(ideal_team_cost_json)
 
-    # calculate cost in procent of each position on each team (float)
+    # calculate ratio cost of each position on each team (float)
     ideal_player_ratio_cost_club = {}
     ideal_team_ratio_cost_club = {}
     for club in ideal_team_cost:
@@ -174,9 +170,8 @@ def splitting_key():
             ideal_player_ratio_cost_club[position_cost] = position_ratio_cost
         ideal_team_ratio_cost_club[club] = ideal_player_ratio_cost_club.copy(
         )
-    ideal_team_cost_procent_club_json = json.dumps(
-        ideal_team_ratio_cost_club, indent=2)
-    # print(ideal_team_cost_procent_club_json)
+    ideal_team_cost_procent_club_json = json.dumps(ideal_team_ratio_cost_club, indent=2)
+    #print(ideal_team_cost_procent_club_json)
 
     # calculate average cost in procent of each position from each team (float)
     ideal_team_cost_ratio = {}
@@ -188,19 +183,16 @@ def splitting_key():
 
         average_ratio_position = position_ratio / len(team_list)
         ideal_team_cost_ratio[position] = average_ratio_position
-        ideal_team_cost_ratio_json = json.dumps(
-                ideal_team_cost_ratio, indent=2)
-    # print(ideal_team_cost_ratio_json)
+        ideal_team_cost_ratio_json = json.dumps(ideal_team_cost_ratio, indent=2)
+    #print(ideal_team_cost_ratio_json)
     return ideal_team_cost_ratio
     
+#splitting_key()
 
-
-# splitting_key()
-
-not_elible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","SpVgg Greuther FWZQrth"]  # de hold som er i samme liga som holdet.
+not_eligible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","SpVgg Greuther FWZQrth"]  # de hold som er i samme liga som holdet.
 
     
-elible_players = []
+eligible_players = []
 
 # Nikolai Kaaberbøl
 # Liste med hold:
@@ -223,69 +215,68 @@ elible_players = []
 # 17.	DSC Arminia Bielefeld
 # 18.	SpVgg Greuther Fürth
 
-a = []
-def player_list_elible():
+def player_list_eligible():
     for player in df["ID"]:
         players_club = df.loc[df["ID"] == player, "Club"].values[0]
-        if players_club in not_elible_teams:
+        if players_club in not_eligible_teams:
             continue
         else:
-            elible_players.append(player)
+            eligible_players.append(player)
 
-    return elible_players
-
-
-# player_list_elible()
+    return eligible_players
 
 
-def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top_values):
-    budget = 0
+
+def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top8_values):
+    budget = int(input("budget: "))
     team = {}
     used_player_list = []
+    spent = 0
     for position in ideal_stats_to_pos:
         new_player = {}
         ideal_stats = ideal_stats_to_pos.get(position)
         for player in player_id_array:
-            player_has_Nan = 0
+            player_has_Nan = False
             sum_difference = 0
             max_price = budget * splitting_key.get(position)
             cost = int(df.loc[df["ID"] == player, "Wage"]) * 52 + int(df.loc[df["ID"] == player, "Value"])
-            if cost > max_price:
+            if cost > max_price or cost == 0:
                 continue
             else:
                 attribute_count = 0
-                for attribute in top_values[position]:
+                for attribute in top8_values[position]:
+                    if player_has_Nan:
+                        continue
                     if attribute in ["ID", "Value", "Wage"]:
                         continue
-                    if math.isnan(ideal_stats_to_pos[position].get(attribute)) or ideal_stats_to_pos[position].get(attribute) == "nan":
-                        # print(player, math.isnan(ideal_stats_to_pos[position].get(attribute)))
-                        player_has_Nan = 1
+                    if math.isnan(df.loc[df["ID"] == player, attribute]):
+                        player_has_Nan = True
+                        #print(player, attribute, player_has_Nan)
                         continue
                     else:
                         attribute_count += 1
-                        player_attribute_value = float(
-                            df.loc[df["ID"] == player, attribute])
+                        player_attribute_value = float(df.loc[df["ID"] == player, attribute])
                         ideal_attributes_value = ideal_stats.get(attribute)
-                        weighted_difference = abs(
-                            player_attribute_value - ideal_attributes_value) * 1  # WEIGHTED NUMBER
-                    sum_difference += weighted_difference
-            if player_has_Nan != 1:
+                        difference = abs(player_attribute_value - ideal_attributes_value) * 1  # WEIGHTED NUMBER
+                    sum_difference += difference
+            if player_has_Nan == False:
                 sum_difference_average = sum_difference / attribute_count
-                    # print(sum_difference, attribute_count, sum_difference_average)
             if player not in used_player_list:
+                new_potential_player = {}
                 if new_player.get(position) == None:
-                    new_player[position] = [player, sum_difference_average]
+                    new_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
                 else:
-                    player_stat_values = new_player[position][1]
-                    if sum_difference_average < player_stat_values:
-                        new_player[position] = [player, sum_difference_average]
+                    new_potential_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
+                    player_stat_values = new_potential_player[position][2]
+                    if player_stat_values < new_player[position][2]:
+                        new_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
+        used_player_list.append(new_player[position][0])
+        spent += new_player[position][3]                
         team[position] = new_player[position].copy()
-        used_player_list.append(player)
     team_json = json.dumps(team, indent=2)
-    # print(team_json)
-    return team
+    #print(team_json)
+    return team, spent
 
 
-
-pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_elible(), ideal_stats_to_pos= ideal_attributes(), top_values = top8(ideal_attributes())))
+pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_eligible(), ideal_stats_to_pos= ideal_attributes(), top8_values = top8(ideal_attributes())))
 
