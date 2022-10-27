@@ -8,7 +8,7 @@ import pprint
 
 # Læser datasættet og erstatter specielle tegn som den ikke var istand til at indkode med orden "aaa"
 df = pd.read_csv('data.csv', encoding='UTF-8')
-df = df.replace('\ufffd', 'WZQ ', regex=True)
+df = df.replace('\ufffd', 'WZQ', regex=True)
 df = df.replace('\u015f', 'WZQ', regex=True)
 df = df.replace('\u011f', 'WZQ', regex=True)
 df = df.replace('\u0130', 'WZQ', regex=True)
@@ -126,7 +126,7 @@ def top8(ideal_attributes):
         top8 = sorted(attributes, key=attributes.get, reverse=True)[2:10]
         result[position] = top8
     result_json = json.dumps(result)
-    # print(result_json)
+    #print(result_json)
     return result
 
 #pprint.pprint(top8(ideal_attributes()))
@@ -180,17 +180,17 @@ def splitting_key():
         for club in team_list:
             # print(ideal_team_ratio_cost_club[club].get(position))
             position_ratio += ideal_team_ratio_cost_club[club].get(position)
-
+    
         average_ratio_position = position_ratio / len(team_list)
         ideal_team_cost_ratio[position] = average_ratio_position
         ideal_team_cost_ratio_json = json.dumps(ideal_team_cost_ratio, indent=2)
     #print(ideal_team_cost_ratio_json)
     return ideal_team_cost_ratio
-    
+
 #splitting_key()
 
 not_eligible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","SpVgg Greuther FWZQrth"]  # de hold som er i samme liga som holdet.
-
+    
     
 eligible_players = []
 
@@ -261,15 +261,17 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top8_valu
                     sum_difference += difference
             if player_has_Nan == False:
                 sum_difference_average = sum_difference / attribute_count
-            if player not in used_player_list:
-                new_potential_player = {}
-                if new_player.get(position) == None:
-                    new_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
-                else:
-                    new_potential_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
-                    player_stat_values = new_potential_player[position][2]
-                    if player_stat_values < new_player[position][2]:
+                if player not in used_player_list:
+                    new_potential_player = {}
+                    if new_player.get(position) == None:
                         new_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
+                    else:
+                        new_potential_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
+                        player_stat_values = new_potential_player[position][2]
+                        if player_stat_values < new_player[position][2]:
+                            new_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
+            else: 
+                continue    
         used_player_list.append(new_player[position][0])
         spent += new_player[position][3]                
         team[position] = new_player[position].copy()
