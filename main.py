@@ -48,6 +48,7 @@ df = df.replace('\u00D6','WZQ', regex=True)
 df = df.replace('\u00E4','WZQ', regex=True)
 df = df.replace('\u00DF','WZQ', regex=True)
 df = df.replace('\u00C1','WZQ', regex=True)
+df = df.replace('\xa0', ' ', regex=True)
 
 def convert(money):
     df[money] = df[money].str.replace("€", "")
@@ -185,9 +186,13 @@ def splitting_key():
         ideal_team_cost_ratio[position] = average_ratio_position
         ideal_team_cost_ratio_json = json.dumps(ideal_team_cost_ratio, indent=2)
     #print(ideal_team_cost_ratio_json)
-    return ideal_team_cost_ratio
+    ideal_team_cost_ratio_sorted = {}
+    ratio_to_position = ideal_team_cost_ratio
+    ideal_team_cost_ratio_sorted = sorted(ratio_to_position, key=ratio_to_position.get, reverse=True)
+    #print(ideal_team_cost_ratio_sorted)
+    return [ideal_team_cost_ratio, ideal_team_cost_ratio_sorted]
 
-#splitting_key()
+#print(splitting_key()[1])
 
 not_eligible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","SpVgg Greuther FWZQrth"]  # de hold som er i samme liga som holdet.
     
@@ -232,13 +237,14 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top8_valu
     team = {}
     used_player_list = []
     spent = 0
-    for position in ideal_stats_to_pos:
+    splitting_key[1]
+    for position in splitting_key[1]:
         new_player = {}
         ideal_stats = ideal_stats_to_pos.get(position)
         for player in player_id_array:
             player_has_Nan = False
             sum_difference = 0
-            max_price = budget * splitting_key.get(position)
+            max_price = budget * splitting_key[0].get(position)
             cost = int(df.loc[df["ID"] == player, "Wage"]) * 52 + int(df.loc[df["ID"] == player, "Value"])
             if cost > max_price or cost == 0:
                 continue
@@ -275,9 +281,11 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top8_valu
         used_player_list.append(new_player[position][0])
         spent += new_player[position][3]                
         team[position] = new_player[position].copy()
+        print(new_player)
+    procent_spent = spent*100 / budget
     team_json = json.dumps(team, indent=2)
     #print(team_json)
-    return team, spent
+    return team, spent, procent_spent
 
 
 pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_eligible(), ideal_stats_to_pos= ideal_attributes(), top8_values = top8(ideal_attributes())))
