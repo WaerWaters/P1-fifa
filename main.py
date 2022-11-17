@@ -4,77 +4,26 @@ import json
 import math
 import csv
 import pprint
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 # Læser datasættet og erstatter specielle tegn som den ikke var istand til at indkode med orden "aaa"
 df = pd.read_csv('data.csv', encoding='UTF-8')
-df = df.replace('\ufffd','WZQ', regex=True)
-df = df.replace('\u011f','WZQ', regex=True)
-df = df.replace('\u0130','WZQ', regex=True)
-df = df.replace('\u0148','WZQ', regex=True)
-df = df.replace('\u0144','WZQ', regex=True)
-df = df.replace('\u0119','WZQ', regex=True)
-df = df.replace('\u015f','WZQ', regex=True)
-df = df.replace('\u0142','WZQ', regex=True)
-df = df.replace('\u015a','WZQ', regex=True)
-df = df.replace('\u0105','WZQ', regex=True)
-df = df.replace('\u0219','WZQ', regex=True)
-df = df.replace('\u021b','WZQ', regex=True)
-df = df.replace('\u017a','WZQ', regex=True)
-df = df.replace('\u0141','WZQ', regex=True)
-df = df.replace('\u00FC','WZQ', regex=True)
-df = df.replace('\u00E9','WZQ', regex=True)
-df = df.replace('\u00F3','WZQ', regex=True)
-df = df.replace('\u00E3','WZQ', regex=True)
-df = df.replace('\u00F6','WZQ', regex=True)
-df = df.replace('\u00ED','WZQ', regex=True)
-df = df.replace('\u00EA','WZQ', regex=True)
-df = df.replace('\u00E7','WZQ', regex=True)
-df = df.replace('\u00F8','WZQ', regex=True)
-df = df.replace('\u00E8','WZQ', regex=True)
-df = df.replace('\u00FA','WZQ', regex=True)
-df = df.replace('\u00C2','WZQ', regex=True)
-df = df.replace('\u00E0','WZQ', regex=True)
-df = df.replace('\u00F1','WZQ', regex=True)
-df = df.replace('\u00E1','WZQ', regex=True)
-df = df.replace('\u00E7','WZQ', regex=True)
-df = df.replace('\u00C9','WZQ', regex=True)
-df = df.replace('\u00EE','WZQ', regex=True)
-df = df.replace('\u00E6','WZQ', regex=True)
-df = df.replace('\u00C7','WZQ', regex=True)
-df = df.replace('\u00E5','WZQ', regex=True)
-df = df.replace('\u00E2','WZQ', regex=True)
-df = df.replace('\u00D6','WZQ', regex=True)
-df = df.replace('\u00E4','WZQ', regex=True)
-df = df.replace('\u00DF','WZQ', regex=True)
-df = df.replace('\u00C1','WZQ', regex=True)
+pd.set_option('display.max_rows', None)
+pd.options.display.float_format = '{:.2f}'.format
+df.head()
+
+uni_array = ['\ufffd','\u015f','\u011f','\u0130','\u0148','\u0119','\u0142','\u015a','\u0105','\u0219','\u021b','\u017a','\u0141','\u00FC','\u00E9','\u00F3','\u00E3','\u00F6','\u00ED','\u00EA','\u00E7','\u00F8','\u00E8','\u00FA','\u00C2','\u00E0','\u00F1','\u00E1','\u00C9','\u00EE','\u00E6','\u00C7','\u00E5','\u00E2','\u00D6','\u00E4','\u00DF','\u00C1']
+for uni in uni_array:
+    df = df.replace(uni,'WZQ', regex=True)
 df = df.replace('\xa0',' ', regex=True)
 
-def convert(money):
-    df[money] = df[money].str.replace("€", "")
-    for i, x in enumerate(df[money]):
-        column_value = df.at[i, money]
-        if "." in column_value and "K" in column_value:
-            df.at[i, money] = df.at[i, money].replace(".", "")
-            df.at[i, money] = df.at[i, money].replace("K", "00")
-            df.at[i, money] = int(df.at[i, money])
-        elif "." in column_value and "M" in column_value:
-            df.at[i, money] = df.at[i, money].replace(".", "")
-            df.at[i, money] = df.at[i, money].replace("M", "00000")
-            df.at[i, money] = int(df.at[i, money])
-        elif "K" in column_value:
-            df.at[i, money] = df.at[i, money].replace("K", "000")
-            df.at[i, money] = int(df.at[i, money])
-        else:
-            df.at[i, money] = df.at[i, money].replace("M", "000000")
-            df.at[i, money] = int(df.at[i, money])
+df["Wage"] = df["Wage"].replace({"K": "*1e3" ,"€": "", "M": "*1e6"}, regex=True).map(pd.eval).astype(float).round(4)
+df["Value"] = df["Value"].replace({"K": "*1e3" ,"€": "", "M": "*1e6"}, regex=True).map(pd.eval).astype(float).round(4)
 
-
-convert("Wage")
-convert("Value")
-
-drop_list = ["Name", "Special", "PreferredFoot", "InternationalReputation", "WeakFoot", "SkillMoves", "WorkRate", "BodyType", "RealFace", "Position", "JerseyNumber", "Joined", "LoanedFrom",
-             "ContractValidUntil", "Height", "Weight", "Age", "Photo", "Nationality", "Flag", "Overall", "Potential", "Club", "ClubLogo", "BestPosition", "BestOverallRating", "ReleaseClause"]
+drop_list = ["Name", "Special", "PreferredFoot", "InternationalReputation", "WeakFoot", "SkillMoves", "WorkRate", "BodyType", "RealFace", "Position", "JerseyNumber", "Joined", "LoanedFrom","ContractValidUntil", "Height", "Weight", "Age", "Photo", "Nationality", "Flag", "Overall", "Potential", "Club", "ClubLogo", "BestPosition", "BestOverallRating", "ReleaseClause"]
 attributes = df.drop(columns=drop_list)
 positions = { #changes made here must also be made in the function; splitting_key in position_list
         "GK": [167495, 235073, 190941],
@@ -129,12 +78,11 @@ def top8(ideal_attributes):
         result[position] = top8
     return result
 
-#pprint.pprint(top8(ideal_attributes()))
+pprint.pprint(top8(ideal_attributes()))
 
 
 def splitting_key():
     team_list = ["FC Bayern MWZQnchen", "Borussia Dortmund", "Leverkusen"]
-    position_list = ["GK","RB","LB","CB1","CB2","CDM1","CDM2","COM","HM","LM","ST"]
     # calculate cost of each positions on each team (float)
     ideal_team_cost = {}
     ideal_player_cost = {}
@@ -163,7 +111,7 @@ def splitting_key():
 
     # calculate average cost in procent of each position from each team (float)
     ideal_team_cost_ratio = {}
-    for position in position_list:
+    for position in positions:
         position_ratio = 0
         for club in team_list:
             position_ratio += ideal_team_ratio_cost_club[club].get(position)
@@ -263,7 +211,7 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top8_valu
                         if player_stat_values < new_player[position][2]:
                             new_player[position] = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, cost]
                             player_cost = cost
-            else: 
+            else:
                 continue  
         residual_cash = max_price + residual_cash - player_cost
         used_player_list.append(new_player[position][0])
@@ -274,5 +222,4 @@ def find_best_team(splitting_key, player_id_array, ideal_stats_to_pos, top8_valu
     return team, spent, procent_spent
 
 
-pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_eligible(), ideal_stats_to_pos= ideal_attributes(), top8_values = top8(ideal_attributes())))
-
+#pprint.pprint(find_best_team(splitting_key = splitting_key(), player_id_array= player_list_eligible(), ideal_stats_to_pos= ideal_attributes(), top8_values = top8(ideal_attributes())))
