@@ -15,17 +15,13 @@ pd.set_option('display.max_rows', None)
 pd.options.display.float_format = '{:.2f}'.format
 df.head()
 
-uni_array = ['\ufffd','\u015f','\u011f','\u0130','\u0148','\u0119','\u0142','\u015a','\u0105','\u0219','\u021b','\u017a','\u0141','\u00FC','\u00E9','\u00F3','\u00E3','\u00F6','\u00ED','\u00EA','\u00E7','\u00F8','\u00E8','\u00FA','\u00C2','\u00E0','\u00F1','\u00E1','\u00C9','\u00EE','\u00E6','\u00C7','\u00E5','\u00E2','\u00D6','\u00E4','\u00DF','\u00C1']
-for uni in uni_array:
-    df = df.replace(uni,'WZQ', regex=True)
-df = df.replace('\xa0',' ', regex=True)
 
 df["Wage"] = df["Wage"].replace({"K": "*1e3" ,"€": "", "M": "*1e6"}, regex=True).map(pd.eval).astype(float).round(4)
 df["Value"] = df["Value"].replace({"K": "*1e3" ,"€": "", "M": "*1e6"}, regex=True).map(pd.eval).astype(float).round(4)
 
-drop_list = ["Name", "Special", "PreferredFoot", "InternationalReputation", "WeakFoot", "SkillMoves", "WorkRate", "BodyType", "RealFace", "Position", "JerseyNumber", "Joined", "LoanedFrom","ContractValidUntil", "Height", "Weight", "Age", "Photo", "Nationality", "Flag", "Overall", "Potential", "Club", "ClubLogo", "BestPosition", "BestOverallRating", "ReleaseClause"]
+drop_list = ["Name", "Special", "PreferredFoot", "InternationalReputation", "WeakFoot", "SkillMoves", "WorkRate", "BodyType", "RealFace", "Position", "JerseyNumber", "Joined", "LoanedFrom","ContractValidUntil", "Height", "Weight", "Age", "Photo", "Nationality", "Flag", "Overall", "Potential", "Club", "ClubLogo", "BestPosition", "BestOverallRating", "ReleaseClause", "Marking"]
 attributes = df.drop(columns=drop_list)
-positions = { #changes made here must also be made in the function; splitting_key in position_list
+positions = {
         "GK": [167495, 235073, 190941],
         "RB": [226851, 202371, 253149],
         "LB": [234396, 209889, 239368],
@@ -69,15 +65,15 @@ def ideal_attributes():
 
 #pprint.pprint(ideal_attributes())
 
-def top8(ideal_team_attributes):
+def top11(ideal_team_attributes):
     result = {}
     for position in ideal_team_attributes:
         attributes = ideal_team_attributes.get(position)
-        top8 = sorted(attributes, key=attributes.get, reverse=True)[2:10]
-        result[position] = top8
+        top11 = sorted(attributes, key=attributes.get, reverse=True)[2:13]
+        result[position] = top11
     return result
 
-#pprint.pprint(top8(ideal_attributes()))
+#pprint.pprint(top11(ideal_attributes()))
 
 
 def splitting_key():
@@ -120,16 +116,19 @@ def splitting_key():
 #pprint.pprint(splitting_key())
 
 
-not_eligible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld"]  # de hold som er i samme liga som holdet.
+not_eligible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld"]  # de hold som er i samme liga som holdet. OG MERE
 eligible_players = []
 icon_ids = [5003, 7826, 3647, 250, 388, 1183, 48940, 34079, 7512, 53769, 1075, 31432, 45674, 9676, 7289, 13743, 241, 1625, 1198, 138449, 330, 11141, 5680, 121939, 5471, 5589, 1668, 1109, 1088, 5419, 7763, 45661, 23174, 4231, 1040, 28130, 37576, 246, 1256, 13128, 49369, 5984, 51539, 10264, 140601, 10535, 5099, 1041]
 
 def eligible_players_list():
     for player in df["ID"]:
         players_club = df.loc[df["ID"] == player, "Club"].values[0]
+        player_name = df.loc[df["ID"] == player, "Name"].values[0]
         if player in icon_ids:
             continue
         elif players_club in not_eligible_teams:
+            continue
+        elif any(char.isdigit() for char in player_name):
             continue
         else:
             eligible_players.append(player)
@@ -138,7 +137,7 @@ def eligible_players_list():
 #pprint.pprint(eligible_players_list())
 
 
-def find_best_team(splitting_key, players, ideal_stats_to_pos, top8_values):
+def find_best_team(splitting_key, players, ideal_stats_to_pos, top11_values):
     budget = int(input("budget: "))
     team = {}
     used_player_list = []
@@ -156,7 +155,7 @@ def find_best_team(splitting_key, players, ideal_stats_to_pos, top8_values):
                 continue
             else:
                 attribute_count = 0
-                for attribute in top8_values[position]:
+                for attribute in top11_values[position]:
                     if player_has_NaN:
                         continue
                     if attribute in ["ID", "Value", "Wage"]:
@@ -180,14 +179,15 @@ def find_best_team(splitting_key, players, ideal_stats_to_pos, top8_values):
                         if potential_player[2] < player_chosen[2]:
                             player_chosen = potential_player
             else:
-                continue  
+                continue 
         residual_cash = max_price + residual_cash - player_chosen[3]
         used_player_list.append(player_chosen[0])
         spent += player_chosen[3]                
         team[position] = player_chosen
-        print(player_chosen, residual_cash)
+        print(position, player_chosen, residual_cash)
     procent_spent = spent*100 / budget
     return team, spent, procent_spent
 
 
-pprint.pprint(find_best_team(splitting_key = splitting_key(), players= eligible_players_list(), ideal_stats_to_pos= ideal_attributes(), top8_values = top8(ideal_attributes())))
+pprint.pprint(find_best_team(splitting_key = splitting_key(), players= eligible_players_list(), ideal_stats_to_pos= ideal_attributes(), top11_values = top11(ideal_attributes())))
+
