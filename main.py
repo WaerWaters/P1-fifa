@@ -53,8 +53,7 @@ def ideal_attributes():
                 if math.isnan(df.loc[df["ID"] == player, attribute]):
                     players_with_NaN += 1
                     continue
-                attribute_value = int(df.loc[df["ID"] == player, attribute])
-                total_attribute_value += attribute_value
+                total_attribute_value += int(df.loc[df["ID"] == player, attribute])
             if len(players) == players_with_NaN:
                 ideal_position_attribute[attribute] = float("nan")
             else:
@@ -77,7 +76,7 @@ def top11(ideal_team_attributes):
 
 
 def splitting_key():
-    top_clubs = ["FC Bayern MWZQnchen", "Borussia Dortmund", "Leverkusen"]
+    top_clubs = ["FC Bayern München", "Borussia Dortmund", "Leverkusen"]
     # calculate cost of each positions on each team (float)
     top_clubs_costs = {}
     ideal_player_cost = {}
@@ -116,19 +115,17 @@ def splitting_key():
 #pprint.pprint(splitting_key())
 
 
-not_eligible_teams = ["FC Bayern MWZQnchen","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC KWZQln","1. FSV Mainz 05","TSG Hoffenheim","Borussia MWZQnchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld"]  # de hold som er i samme liga som holdet. OG MERE
-eligible_players = []
-icon_ids = [5003, 7826, 3647, 250, 388, 1183, 48940, 34079, 7512, 53769, 1075, 31432, 45674, 9676, 7289, 13743, 241, 1625, 1198, 138449, 330, 11141, 5680, 121939, 5471, 5589, 1668, 1109, 1088, 5419, 7763, 45661, 23174, 4231, 1040, 28130, 37576, 246, 1256, 13128, 49369, 5984, 51539, 10264, 140601, 10535, 5099, 1041]
+
 
 def eligible_players_list():
+    not_eligible_teams = ["FC Bayern München","Borussia Dortmund","Bayer 04 Leverkusen","RB Leipzig","1. FC Union Berlin","Sport-Club Freiburg","1. FC Köln","1. FSV Mainz 05","TSG Hoffenheim","Borussia Mönchengladbach","Eintracht Frankfurt","VfL Wolfsburg","VfL Bochum 1848","FC Augsburg","Vfb Stuttgart","Hertha BSC","DSC Arminia Bielefeld","Deportivo Táchira FC","Club Olimpia","Club Nacional de Football","Junior FC","Club Cerro Porteño","Barcelona Sporting Club","Universidad Católica","Club Universitario de Deportes", "Club Always Ready","América de Cali","LDU Quito", "Club Sporting Cristal", "Club Atlético Rentistas","Atlético Nacional","Flamengo","Palmeiras","São Paulo","Club Independiente Santa Fe", "Club The Strongest","Independiente del Valle", "Unión La Calera","Deportivo La Guaira FC","Sport Club Corinthians Paulista","Deportivo Cali","RB Bragantino","Club Atlético Peñarol","CD Huachipato","Club Bolívar","Club Libertad","Club Deportes Tolima","Montevideo City Torque","Carlos A. Mannucci","Universidad Técnica de Cajamarca","Deportivo Pasto","CS Emelec","Club Deportivo Palestino","Guaireña FC","Club River Plate Asunción","Sport Huancayo","Club Deportivo Jorge Wilstermann","La Equidad","CD Antofagasta","12 de Octubre FC","Guayaquil City FC","Centro Atlético Fénix","Cerro Largo Fútbol Club","Club de Deportes Cobresal","Club Social y Deportivo Macará","Academia Puerto Cabello","FBC Melgar","Metropolitanos de Caracas FC","Club Atlético Nacional Potosí","Aragua Fútbol Club","Club Deportivo Guabirá","AC Mineros de Guayana"]  # de hold som er i samme liga som holdet og de hold som ikke er i Fifa
+    icon_ids = [5003, 7826, 3647, 250, 388, 1183, 48940, 34079, 7512, 53769, 1075, 31432, 45674, 9676, 7289, 13743, 241, 1625, 1198, 138449, 330, 11141, 5680, 121939, 5471, 5589, 1668, 1109, 1088, 5419, 7763, 45661, 23174, 4231, 1040, 28130, 37576, 246, 1256, 13128, 49369, 5984, 51539, 10264, 140601, 10535, 5099, 1041]
+    not_found_ingame = [230289, 173155]
+    eligible_players = []
     for player in df["ID"]:
         players_club = df.loc[df["ID"] == player, "Club"].values[0]
         player_name = df.loc[df["ID"] == player, "Name"].values[0]
-        if player in icon_ids:
-            continue
-        elif players_club in not_eligible_teams:
-            continue
-        elif any(char.isdigit() for char in player_name):
+        if (player in icon_ids) or (player in not_found_ingame) or (players_club in not_eligible_teams) or (any(char.isdigit() for char in player_name)):
             continue
         else:
             eligible_players.append(player)
@@ -146,28 +143,24 @@ def find_best_team(splitting_key, players, ideal_stats_to_pos, top11_values):
     for position in splitting_key[1]:
         player_chosen = []
         ideal_stats = ideal_stats_to_pos.get(position)
+        max_price = budget * splitting_key[0].get(position)
         for player in players:
             player_has_NaN = False
             sum_difference = 0
-            max_price = budget * splitting_key[0].get(position)
             player_cost = int(df.loc[df["ID"] == player, "Wage"]) * 52 + int(df.loc[df["ID"] == player, "Value"])
             if player_cost > max_price + residual_cash or player_cost == 0:
                 continue
             else:
                 attribute_count = 0
                 for attribute in top11_values[position]:
-                    if player_has_NaN:
-                        continue
-                    if attribute in ["ID", "Value", "Wage"]:
-                        continue
-                    if math.isnan(df.loc[df["ID"] == player, attribute]):
+                    if (player_has_NaN) or (attribute in ["ID", "Value", "Wage"]) or (math.isnan(df.loc[df["ID"] == player, attribute])):
                         player_has_NaN = True
                         continue
                     else:
                         attribute_count += 1
                         player_attribute_value = float(df.loc[df["ID"] == player, attribute])
                         ideal_attribute_value = ideal_stats.get(attribute)
-                        difference = abs(player_attribute_value - ideal_attribute_value) * 1  # WEIGHTED NUMBER
+                        difference = abs(player_attribute_value - ideal_attribute_value)
                         sum_difference += difference
             if player_has_NaN == False:
                 if player not in used_player_list:
@@ -175,9 +168,8 @@ def find_best_team(splitting_key, players, ideal_stats_to_pos, top11_values):
                     potential_player = [player, str(df.loc[df["ID"] == player, "Name"].values[0]), sum_difference_average, player_cost]
                     if player_chosen == []:
                         player_chosen = potential_player
-                    else:
-                        if potential_player[2] < player_chosen[2]:
-                            player_chosen = potential_player
+                    elif potential_player[2] < player_chosen[2]:
+                        player_chosen = potential_player
             else:
                 continue 
         residual_cash = max_price + residual_cash - player_chosen[3]
